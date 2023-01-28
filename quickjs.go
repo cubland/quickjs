@@ -380,6 +380,17 @@ func (v Value) BigFloat() *big.Float {
 	return val
 }
 
+func (v Value) Call(args ...Value) Value {
+	if !v.IsFunction() {
+		return v.ctx.Null()
+	}
+	cargs := []C.JSValue{}
+	for _, x := range args {
+		cargs = append(cargs, x.ref)
+	}
+	return Value{ctx: v.ctx, ref: C.JS_Call(v.ctx.ref, v.ref, v.ctx.Null().ref, C.int(len(cargs)), &cargs[0])}
+}
+
 func (v Value) Get(name string) Value {
 	namePtr := C.CString(name)
 	defer C.free(unsafe.Pointer(namePtr))
